@@ -44,6 +44,28 @@ functions:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
 
+  deleteResource:
+    handler: functions/delete_resource.delete
+    name: deleteResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns:
+        - 'functions/delete_resource.js'
+    events:
+      - http:
+          path: /delete
+          method: delete
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
+
 resources:
   Resources:
     ServerlessResourcesTable: # DynamoDB table resource config
