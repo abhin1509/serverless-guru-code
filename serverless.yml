@@ -2,11 +2,67 @@ service: serverless-guru
 
 frameworkVersion: "3"
 
+plugins:
+  - serverless-iam-roles-per-function
+
+
 provider:
   name: aws
   runtime: nodejs16.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'} # multistage deployment support, defaults to 'dev'
+
+
+package:
+  individually: true # package each lambda function individually
+  patterns:
+    - '!node_modules/**'
+    - '!package.json'
+    - '!package-lock.json'
+    - '!functions/**'
 
 
 functions:
-  hello:
-    handler: handler.hello
+  createResource:
+    handler: functions/create_resource.create # path to handler, create_resource is the file name, create is the function name
+    name: createResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns:
+        - 'functions/create_resource.js'
+    events: # api gateway event
+      - http:
+          path: /add
+          method: post
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
+
+resources:
+  Resources:
+    ServerlessResourcesTable: # DynamoDB table resource config
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ServerlessResources-${self:provider.stage}-table
+        BillingMode: PAY_PER_REQUEST  #for billing mode On Demand. If you want to use provisioned capacity, comment this line and uncomment the ProvisionedThroughput lines below
+        AttributeDefinitions:
+          - AttributeName: resourceId
+            AttributeType: S
+          - AttributeName: "resourceLevel"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: resourceId # partition key
+            KeyType: HASH
+        GlobalSecondaryIndexes: # configure global secondary index
+          - IndexName: resourceLevel-index
+            KeySchema:
+              - AttributeName: resourceLevel
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL # return all attributes
