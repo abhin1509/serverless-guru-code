@@ -65,6 +65,27 @@ functions:
         Resource:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
+  updateResource:
+    handler: functions/update_resource.update
+    name: updateResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns:
+        - 'functions/update_resource.js'
+    events:
+      - http:
+          path: /update
+          method: put
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
 
 resources:
   Resources:
