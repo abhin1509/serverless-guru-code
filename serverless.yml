@@ -87,6 +87,27 @@ functions:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
 
+  listResource:
+    handler: functions/list_resource.list
+    name: listResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns:
+        - 'functions/list_resource.js'
+    events:
+      - http:
+          path: /list
+          method: get
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
+
 resources:
   Resources:
     ServerlessResourcesTable: # DynamoDB table resource config
