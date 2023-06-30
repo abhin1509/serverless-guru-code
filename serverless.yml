@@ -1,9 +1,14 @@
+# Configuration file for Serverless framework
+
+# Name of the service is serverless-guru
 service: serverless-guru
 
+# Serverlss framework version is 3
 frameworkVersion: "3"
 
+# Plugins used in the project
 plugins:
-  - serverless-iam-roles-per-function
+  - serverless-iam-roles-per-function # plugin to create IAM roles for each lambda function
 
 
 provider:
@@ -13,6 +18,9 @@ provider:
   stage: ${opt:stage, 'dev'} # multistage deployment support, defaults to 'dev'
 
 
+# Package configuration
+# Package each lambda function individually
+# Exclude node_modules, package.json, package-lock.json, functions, tests from the package
 package:
   individually: true # package each lambda function individually
   patterns:
@@ -20,38 +28,125 @@ package:
     - '!package.json'
     - '!package-lock.json'
     - '!functions/**'
+    - '!tests/**'
 
 
 functions:
-  createResource:
+  createResource: # configuration for createResource lambda function
     handler: functions/create_resource.create # path to handler, create_resource is the file name, create is the function name
     name: createResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable # sets the env variable DYNAMODB_TABLE which is a reference to the DynamoDB table resource
+    package:
+      patterns: # package only the create_resource.js file
+        - 'functions/create_resource.js'
+    events: # api gateway event configuration
+      - http:
+          path: /add
+          method: post
+          cors: true # enable CORS
+    iamRoleStatements: # IAM role statements for the lambda function
+      - Effect: Allow 
+        Action: # allow the lambda function to perform putItem operation on the DynamoDB table
+          - dynamodb:PutItem
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] } 
+
+
+  deleteResource: # configuration for deleteResource lambda function
+    handler: functions/delete_resource.delete # delete_resource is the file name, delete is the function name
+    name: deleteResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable # sets the env variable DYNAMODB_TABLE which is a reference to the DynamoDB table resource
+    package:
+      patterns: # package only the delete_resource.js file
+        - 'functions/delete_resource.js'
+    events: # api gateway event configuration
+      - http:
+          path: /delete
+          method: delete
+          cors: true
+    iamRoleStatements: 
+      - Effect: Allow
+        Action: # allow the lambda function to perform getItem and deleteItem operation on the DynamoDB table
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource: # reference to the DynamoDB table resource
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
+
+  updateResource: # configuration for updateResource lambda function
+    handler: functions/update_resource.update # path to handler, update_resource is the file name, update is the function name
+    name: updateResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns: # package only the update_resource.js file
+        - 'functions/update_resource.js'
+    events:
+      - http:
+          path: /update
+          method: put
+          cors: true
+    iamRoleStatements: 
+      - Effect: Allow
+        Action: # allow the lambda to perform getItem and updateItem operation
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+
+
+  listResource: # configuration for listResource lambda function
+    handler: functions/list_resource.list 
+    name: listResource-${self:provider.stage}-lambda
     environment:
       DYNAMODB_TABLE: !Ref ServerlessResourcesTable
     package:
       patterns:
-        - 'functions/create_resource.js'
-    events: # api gateway event
+        - 'functions/list_resource.js'
+    events:
       - http:
-          path: /add
-          method: post
+          path: /list
+          method: get
           cors: true
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:PutItem
+          - dynamodb:Scan
         Resource:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
+
+  getLevelResource: # configuration for getLevelResource lambda function
+    handler: functions/get_level_resource.level # path to handler, get_level_resource is the file name, level is the function name
+    name: getLevelResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable # sets the env variable DYNAMODB_TABLE which is a reference to the DynamoDB table resource
+    package:
+      patterns: # package only the get_level_resource.js file
+        - 'functions/get_level_resource.js'
+    events: # api gateway event configuration
+      - http:
+          path: /resourceLevel # path to the api endpoint
+          method: get
+          cors: true
+    iamRoleStatements: # IAM role statements for the lambda function
+      - Effect: Allow
+        Action: # allow the lambda function to perform query operation on the DynamoDB table
+          - dynamodb:Query
+        Resource: 
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] } # reference to the DynamoDB table resource
+          - { Fn::Join: [ "/", [ Fn::GetAtt: [ ServerlessResourcesTable, Arn ], "index/*" ] ] } # reference to the DynamoDB table global secondary index
 
 resources:
   Resources:
     ServerlessResourcesTable: # DynamoDB table resource config
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ServerlessResources-${self:provider.stage}-table
-        BillingMode: PAY_PER_REQUEST  #for billing mode On Demand. If you want to use provisioned capacity, comment this line and uncomment the ProvisionedThroughput lines below
-        AttributeDefinitions:
+        TableName: ServerlessResources-${self:provider.stage}-table 
+        BillingMode: PAY_PER_REQUEST  # sets billing mode to pay per request which means charges are based on number of read/write requests
+        AttributeDefinitions: # configure attributes
           - AttributeName: resourceId
             AttributeType: S
           - AttributeName: "resourceLevel"
@@ -60,9 +155,9 @@ resources:
           - AttributeName: resourceId # partition key
             KeyType: HASH
         GlobalSecondaryIndexes: # configure global secondary index
-          - IndexName: resourceLevel-index
-            KeySchema:
-              - AttributeName: resourceLevel
+          - IndexName: resourceLevel-index # name of the index
+            KeySchema: # key schema for global secondary index
+              - AttributeName: resourceLevel 
                 KeyType: HASH
             Projection:
               ProjectionType: ALL # return all attributes
