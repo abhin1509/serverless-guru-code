@@ -20,7 +20,6 @@ provider:
 
 # Package configuration
 # Package each lambda function individually
-# Exclude node_modules, package.json, package-lock.json, functions, tests from the package
 package:
   individually: true # package each lambda function individually
   patterns:
@@ -28,6 +27,8 @@ package:
     - '!package.json'
     - '!package-lock.json'
     - '!functions/**'
+    - '!screenshots/**'
+    - '!README.md'
     - '!tests/**'
 
 
@@ -44,7 +45,7 @@ functions:
       - http:
           path: /add
           method: post
-          cors: true # enable CORS
+          cors: true
     iamRoleStatements: # IAM role statements for the lambda function
       - Effect: Allow 
         Action: # allow the lambda function to perform putItem operation on the DynamoDB table
@@ -152,7 +153,7 @@ resources:
           - AttributeName: "resourceLevel"
             AttributeType: "S"
         KeySchema:
-          - AttributeName: resourceId # partition key
+          - AttributeName: resourceId
             KeyType: HASH
         GlobalSecondaryIndexes: # configure global secondary index
           - IndexName: resourceLevel-index # name of the index
