@@ -65,6 +65,7 @@ functions:
         Resource:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
+
   updateResource:
     handler: functions/update_resource.update
     name: updateResource-${self:provider.stage}-lambda
