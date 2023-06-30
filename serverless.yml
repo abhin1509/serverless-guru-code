@@ -10,7 +10,7 @@ frameworkVersion: "3"
 plugins:
   - serverless-iam-roles-per-function # plugin to create IAM roles for each lambda function
 
-
+# provider
 provider:
   name: aws
   runtime: nodejs16.x
