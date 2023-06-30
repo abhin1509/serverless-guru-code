@@ -45,6 +45,7 @@ exports.create = async (event) => {
       },
     };
 
+    // create resource
     await dynamoDB.put(params).promise();
     return sendResponse(201, params.Item, "Resource created successfully");
   } catch (error) {

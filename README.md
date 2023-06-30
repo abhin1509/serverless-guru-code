@@ -2,51 +2,7 @@
 
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/abhin1509/serverless-guru-code/deploy_app.yml)
 
-### Hosted API Endpoints
-
-###### Create a resource `POST`
-```
-https://q6fd19f92j.execute-api.us-east-1.amazonaws.com/dev/add
-```
-- Sample request body
-```
-{
-    "topic": "serverless intro",
-    "link": "https://youtube.com",
-    "resourceLevel": 1
-}
-```
-###### Get all resources `GET`
-```
-https://q6fd19f92j.execute-api.us-east-1.amazonaws.com/dev/list
-```
-###### Delete a resource `DELETE`
-```
-https://q6fd19f92j.execute-api.us-east-1.amazonaws.com/dev/delete
-```
-- Sample request body
-```
-{
-    "resourceId": "resource-id"
-}
-```
-###### Update a resource `PUT`
-```
-https://q6fd19f92j.execute-api.us-east-1.amazonaws.com/dev/update
-```
-- Sample request body
-```
-{
-    "resourceId": "2c86b9f2142dk2339",
-    "topic": "serverless updated intro",
-    "link": "https://youtube.com",
-    "resourceLevel": 3
-}
-```
-###### Get resource by level `GET`
-```
-https://q6fd19f92j.execute-api.us-east-1.amazonaws.com/dev/resourceLevel?level=1
-```
+This REST API provides CRUD operations for listing serverless tutorials. The tutorials can be blogs, videos, or documentations. Each tutorial includes the name of the topic, a link to the tutorial, and the level of difficulty (beginner, intermediate, or advanced).
 
 
 ### Instructions
