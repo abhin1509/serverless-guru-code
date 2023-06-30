@@ -20,7 +20,7 @@ provider:
 
 # Package configuration
 # Package each lambda function individually
-# Exclude node_modules, package.json, package-lock.json, functions from the package
+# Exclude node_modules, package.json, package-lock.json, functions, tests from the package
 package:
   individually: true # package each lambda function individually
   patterns:
@@ -28,7 +28,7 @@ package:
     - '!package.json'
     - '!package-lock.json'
     - '!functions/**'
-
+    - '!tests/**'
 
 
 functions:
