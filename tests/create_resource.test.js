@@ -48,4 +48,18 @@ describe("create", () => {
       message: "Resource created successfully",
     });
   });
+
+  test("should return an error for missing parameters", async () => {
+    const mockEvent = {
+      body: JSON.stringify({
+        topic: "Test Topic",
+        // link and resourceLevel are missing intentionally
+      }),
+    };
+
+    const response = await create(mockEvent);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toContain("All three parameters are required!");
+  });
 });
