@@ -109,6 +109,27 @@ functions:
           - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
 
 
+  getLevelResource:
+    handler: functions/get_level_resource.level
+    name: getLevelResource-${self:provider.stage}-lambda
+    environment:
+      DYNAMODB_TABLE: !Ref ServerlessResourcesTable
+    package:
+      patterns:
+        - 'functions/get_level_resource.js'
+    events:
+      - http:
+          path: /resourceLevel
+          method: get
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - { Fn::GetAtt: [ ServerlessResourcesTable, Arn ] }
+          - { Fn::Join: [ "/", [ Fn::GetAtt: [ ServerlessResourcesTable, Arn ], "index/*" ] ] }
+
 resources:
   Resources:
     ServerlessResourcesTable: # DynamoDB table resource config

@@ -29,7 +29,7 @@ exports.create = async (event) => {
     const resourceId = crypto.randomBytes(8).toString("hex");
 
     let mappedLevel = "Intermediate";
-    if (resourceLevel === 1 || resourceLevel === 2 || resourceLevel === 3) {
+    if (resourceLevel === 1 || resourceLevel === 3) {
       mappedLevel = levelMapping[resourceLevel];
     }
 

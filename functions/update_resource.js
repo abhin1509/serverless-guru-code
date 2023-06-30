@@ -38,7 +38,7 @@ exports.update = async (event) => {
     }
 
     let mappedLevel = "Intermediate";
-    if (resourceLevel === 1 || resourceLevel === 2 || resourceLevel === 3) {
+    if (resourceLevel === 1 || resourceLevel === 3) {
       mappedLevel = levelMapping[resourceLevel];
     }
 
