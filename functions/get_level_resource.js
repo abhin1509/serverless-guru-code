@@ -26,7 +26,7 @@ exports.level = async (event) => {
     }
 
     let mappedLevel = "Intermediate";
-    if (level === 1 || level === 3) {
+    if (level == 1 || level == 3) {
       mappedLevel = levelMapping[level];
     }
     const params = {
