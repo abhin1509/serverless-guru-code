@@ -17,6 +17,7 @@ exports.list = async (event) => {
       TableName: process.env.DYNAMODB_TABLE,
     };
 
+    // fetch all records
     const res = await dynamoDB.scan(params).promise();
     return sendResponse(200, res.Items, "Resource listed successfully!");
   } catch (error) {
